@@ -1,4 +1,4 @@
-//
+//  Sliding Puzzle
 //  ViewController.swift
 //  Ind02_Jaffri_Faisal
 //
@@ -8,32 +8,40 @@
 import UIKit
 
 class ViewController: UIViewController {
+    //array to hold all the imageviews loaded initially
     var imageViews: [UIImageView] = []
+    //array to hold all the imageviews when they switch positions
     var imageViewsCurrentState: [UIImageView] = []
-    var originalState: [CGPoint] = []
-    var cgPoints: [CGPoint] = []
-    var currState: [CGPoint] = []
-    var emptyTile:UIImageView!
+    //array to hold Initial position of all the images
+    var initial_position: [CGPoint] = []
+    //array to hold updated position of all the images
+    var cuurent_state: [CGPoint] = []
+    //Imageview of the emptyTile
+    var blankImage:UIImageView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+        /// Additional setup after loading the view.
+        ///
+        /// Loads all the imageviews at once programmatically
+        ///
+        /// Store the center of the imageviews in sepearte array
+        /// Store all the imageviews in sepearte array
         var xMid = 67
         var yMid = 200
         var x = 1
         for _ in 0...4{
             for _ in 0...3{
                 let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapAction))
-                let imgview = UIImageView(frame: CGRect(x: xMid, y: yMid, width: 93, height: 93))
-                imgview.image = UIImage(named: String(x)+".png")
-                originalState.append(imgview.center)
+                let imageview = UIImageView(frame: CGRect(x: xMid, y: yMid, width: 93, height: 93))
+                imageview.image = UIImage(named: String(x)+".png")
                 let centrePoint: CGPoint = CGPoint(x: xMid, y: yMid)
-                cgPoints.append(centrePoint)
-                imgview.center = centrePoint
-                imgview.addGestureRecognizer(tapRecognizer)
-                imgview.isUserInteractionEnabled = true
-                imageViews.append(imgview)
-                view.addSubview(imgview)
+                initial_position.append(centrePoint)
+                imageview.center = centrePoint
+                imageview.addGestureRecognizer(tapRecognizer)
+                imageview.isUserInteractionEnabled = true
+                imageViews.append(imageview)
+                view.addSubview(imageview)
                 xMid += 93
                 x = x+1
             }
@@ -43,28 +51,25 @@ class ViewController: UIViewController {
             
         }
         imageViewsCurrentState = imageViews
-        emptyTile = imageViews[0]
+        blankImage = imageViews[0]
     }
-    
+    /// Handles the tap functionality for each of the imageview
+    ///
+    /// Validates that the puzzle is solved or not
+    ///
+    /// Creates UIAlert when the puzzle is solved
     @objc func tapAction(_ sender: UITapGestureRecognizer){
-        if (sender.view != emptyTile){
-            
-            let result:Cordinates = getCordinates(sender.view as! UIImageView)
-            let currImage = sender.view?.frame.origin
+        if (sender.view != blankImage){
+            let result:Cordinates = get_image_coordinates(sender.view as! UIImageView)
+            //let currImage = sender.view?.frame.origin
             if (result.IsValid){
-                let i:Int = imageViewsCurrentState.firstIndex(of: emptyTile)!
-                let j:Int = imageViewsCurrentState.firstIndex(of: sender.view as! UIImageView)!
-                let temp = emptyTile.frame.origin
-                emptyTile.frame.origin = currImage!
-                sender.view?.frame.origin = temp
-                UIView.transition(with: sender.view!, duration: 0.25, options: .transitionFlipFromLeft, animations: { [self] in (sender.view! as! UIImageView).image = (sender.view! as! UIImageView).image}, completion: nil)
-                imageViewsCurrentState.swapAt(i, j)
-                //print(isPuzzleSolved())
+                // swap empty image with the image touched by user in its right,left,up or down location
+                swap_images(curr_Image: sender.view as! UIImageView)
+                
                 if(is_puzzle_solved()){
                     
-                    
                     // Create new Alert
-                    var dialogMessage = UIAlertController(title: "Solved", message: "You are a genius", preferredStyle: .alert)
+                    let dialogMessage = UIAlertController(title: "Solved", message: "You are a genius", preferredStyle: .alert)
                     
                     // Create OK button with action handler
                     let ok = UIAlertAction(title: "OK", style: .default, handler: { (action) -> Void in
@@ -80,16 +85,13 @@ class ViewController: UIViewController {
             
         }
     }
-    
-    func getCordinates(_ view: UIImageView) -> Cordinates{
-        
-        print(view.frame)
-        print(view.center)
-        print(view.frame.origin)
+    /// Returns the location of the image which user has tapped
+    ///
+    /// Use this method to fetch the coordinates of the tapped image next to blank image
+    func get_image_coordinates(_ view: UIImageView) -> Cordinates{
         
         let currentTile_xPosition = view.frame.origin.x
         let currentTile_yPosition = view.frame.origin.y
-        
         
         
         let leftTile_xPosition = currentTile_xPosition-93
@@ -104,27 +106,30 @@ class ViewController: UIViewController {
         let downTile_xPosition = currentTile_xPosition
         let downTile_yPosition = currentTile_yPosition+93
         
-        if (leftTile_xPosition == emptyTile.frame.origin.x && leftTile_yPosition == emptyTile.frame.origin.y){
+        if (leftTile_xPosition == blankImage.frame.origin.x && leftTile_yPosition == blankImage.frame.origin.y){
             return Cordinates(x: leftTile_xPosition, y: leftTile_yPosition, IsValid: true)
         }
-        if (rightTile_xPosition == emptyTile.frame.origin.x && rightTile_yPosition == emptyTile.frame.origin.y){
+        if (rightTile_xPosition == blankImage.frame.origin.x && rightTile_yPosition == blankImage.frame.origin.y){
             return Cordinates(x: rightTile_xPosition, y: rightTile_yPosition, IsValid: true)
         }
-        if (upTile_xPosition == emptyTile.frame.origin.x && upTile_yPosition == emptyTile.frame.origin.y){
+        if (upTile_xPosition == blankImage.frame.origin.x && upTile_yPosition == blankImage.frame.origin.y){
             return Cordinates(x: upTile_xPosition, y: upTile_yPosition, IsValid: true)
         }
-        if (downTile_xPosition == emptyTile.frame.origin.x && downTile_yPosition == emptyTile.frame.origin.y){
+        if (downTile_xPosition == blankImage.frame.origin.x && downTile_yPosition == blankImage.frame.origin.y){
             return Cordinates(x: downTile_xPosition, y: downTile_yPosition, IsValid: true)
         }
         return Cordinates(x: downTile_xPosition, y: downTile_yPosition, IsValid: false)
         
         
     }
+    /// Returns a random imageview next to the blank image
+    ///
+    /// Use this method to generate valid shuffles for the puzzle
     func do_valid_shuffle() -> UIImageView{
         
         var validTiles:[UIImageView] = []
-        let emptyTile_xPosition = emptyTile.frame.origin.x
-        let emptyTile_yPosition = emptyTile.frame.origin.y
+        let emptyTile_xPosition = blankImage.frame.origin.x
+        let emptyTile_yPosition = blankImage.frame.origin.y
         
         let leftTile_Position = CGPoint(x: emptyTile_xPosition-93, y: emptyTile_yPosition)
         let rightTile_Position = CGPoint(x: emptyTile_xPosition+93, y: emptyTile_yPosition)
@@ -139,71 +144,64 @@ class ViewController: UIViewController {
                 
             }
         }
-        let elem = validTiles.randomElement()!
         
-        if (elem.frame.origin == leftTile_Position){
-            print("left")
-        }
-        if (elem.frame.origin  == rightTile_Position){
-            print("right")
-        }
-        if (elem.frame.origin  == upTile_Position){
-            print("up")
-        }
-        if (elem.frame.origin  == downTile_Position){
-            print("down")
-        }
-        
-        return elem
+        return  validTiles.randomElement()!
         
         
     }
+    /// Displays all the images randomly shuffled in the display
+    ///
+    /// Use this method when user taps on the shuffle button
     
-    @IBAction func doShuffle(_ sender: Any) {
+    @IBAction func do_shuffle(_ sender: Any) {
         var randomShuffleCount = Int.random(in: 10..<25)
-        print(randomShuffleCount)
         while(randomShuffleCount>0){
             let curr_tile = do_valid_shuffle()
-            let i:Int = imageViewsCurrentState.firstIndex(of: emptyTile)!
-            let j:Int = imageViewsCurrentState.firstIndex(of: curr_tile)!
-            let temp = emptyTile.frame.origin
-            emptyTile.frame.origin = curr_tile.frame.origin
-            curr_tile.frame.origin = temp
-            imageViewsCurrentState.swapAt(i, j)
+            swap_images(curr_Image: curr_tile)
             randomShuffleCount -= 1
-
-            
         }
         
     }
+    /// Save current state of the puzzle where user have reached
+    ///
+    /// Use this method to save all the progress which user has reached so far
     
-    func saveCurrentState(){
+    func save_current_state(){
         for i in 0...imageViewsCurrentState.count-1{
-            currState.append(imageViewsCurrentState[i].center)
+            cuurent_state.append(imageViewsCurrentState[i].center)
         }
         
     }
+    /// When user clicks on the Show Answer button, the solved image is displayed
+    ///
+    /// When user clicks on the Hide button, the image is loaded on that point where user left
+    ///
+    /// Use this method when user taps on the Show Answer and Hide button
     
-    @IBAction func showAnswer(_ sender: UIButton) {
+    @IBAction func show_answer(_ sender: UIButton) {
         if (sender.titleLabel?.text == "Show Answer"){
-            saveCurrentState()
+            save_current_state()
             
             for i in 0...imageViews.count-1{
-                imageViews[i].center = cgPoints[i]
+                imageViews[i].center = initial_position[i]
             }
             sender.setTitle("Hide", for: .normal)
         }
         else if(sender.titleLabel?.text == "Hide"){
             for i in 0...imageViews.count-1{
-                imageViewsCurrentState[i].center = currState[i]
+                imageViewsCurrentState[i].center = cuurent_state[i]
             }
             sender.setTitle("Show Answer", for: .normal)
-            currState = []
+            cuurent_state = []
            
         }
-        
-        
+
     }
+    
+    /// Returns a boolean value that tells user has solved the puzzle or not
+    ///
+    /// Use this method to check if the puzzle is soved or not
+    
     func is_puzzle_solved() -> Bool {
         for i in 0...imageViews.count - 1 {
             if imageViewsCurrentState[i] != imageViews[i] {
@@ -213,11 +211,23 @@ class ViewController: UIViewController {
             return true
     }
     
-    func swap_images(){
+    /// Swaps the blank image with the image next to blank image which user tapped
+    ///
+    /// Use this method to swap images
+    
+    func swap_images(curr_Image:UIImageView){
+        let i:Int = imageViewsCurrentState.firstIndex(of: blankImage)!
+        let j:Int = imageViewsCurrentState.firstIndex(of: curr_Image)!
+        let temp = blankImage.frame.origin
+        blankImage.frame.origin = curr_Image.frame.origin
+        curr_Image.frame.origin = temp
+        imageViewsCurrentState.swapAt(i, j)
+        UIView.transition(with: curr_Image, duration: 0.25, options: .transitionFlipFromRight, animations: {}, completion: nil)
         
     }
 }
 
+/// Struct to save mid positio of image along with a boolean value which keeps track of the blank image
 
 struct Cordinates{
     
