@@ -18,6 +18,8 @@ class ViewController: UIViewController {
     var cuurent_state: [CGPoint] = []
     //Imageview of the emptyTile
     var blankImage:UIImageView!
+    // boolean variable to block user clicking on Images tiles when they click show answer button
+    var lockScreen:Bool = true
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -59,7 +61,7 @@ class ViewController: UIViewController {
     ///
     /// Creates UIAlert when the puzzle is solved
     @objc func tapAction(_ sender: UITapGestureRecognizer){
-        if (sender.view != blankImage){
+        if (sender.view != blankImage && lockScreen){
             let result:Cordinates = get_image_coordinates(sender.view as! UIImageView)
             //let currImage = sender.view?.frame.origin
             if (result.IsValid){
@@ -89,11 +91,11 @@ class ViewController: UIViewController {
     ///
     /// Use this method to fetch the coordinates of the tapped image next to blank image
     func get_image_coordinates(_ view: UIImageView) -> Cordinates{
-        
+        //gets the origin of the blank image
         let currentTile_xPosition = view.frame.origin.x
         let currentTile_yPosition = view.frame.origin.y
         
-        
+        // Calcultes the position of the left,right,up and down image
         let leftTile_xPosition = currentTile_xPosition-93
         let leftTile_yPosition = currentTile_yPosition
         
@@ -106,6 +108,8 @@ class ViewController: UIViewController {
         let downTile_xPosition = currentTile_xPosition
         let downTile_yPosition = currentTile_yPosition+93
         
+        // checks at which direction of the tapped image is blank image and return that position
+
         if (leftTile_xPosition == blankImage.frame.origin.x && leftTile_yPosition == blankImage.frame.origin.y){
             return Cordinates(x: leftTile_xPosition, y: leftTile_yPosition, IsValid: true)
         }
@@ -131,10 +135,12 @@ class ViewController: UIViewController {
         let emptyTile_xPosition = blankImage.frame.origin.x
         let emptyTile_yPosition = blankImage.frame.origin.y
         
+        //checks the location of the tiles adjacent to blank tile
         let leftTile_Position = CGPoint(x: emptyTile_xPosition-93, y: emptyTile_yPosition)
         let rightTile_Position = CGPoint(x: emptyTile_xPosition+93, y: emptyTile_yPosition)
         let upTile_Position = CGPoint(x: emptyTile_xPosition, y: emptyTile_yPosition-93)
         let downTile_Position = CGPoint(x: emptyTile_xPosition, y: emptyTile_yPosition+93)
+        //adds the location of the tiles adjacent to blank tile and add it in an array
         for index in 0...imageViews.count-1{
             
             if (imageViews[index].frame.origin == leftTile_Position || imageViews[index].frame.origin == rightTile_Position ||
@@ -144,7 +150,7 @@ class ViewController: UIViewController {
                 
             }
         }
-        
+        //return any random tile adjacent to blank tile
         return  validTiles.randomElement()!
         
         
@@ -180,18 +186,23 @@ class ViewController: UIViewController {
     
     @IBAction func show_answer(_ sender: UIButton) {
         if (sender.titleLabel?.text == "Show Answer"){
+            lockScreen = false
+            //saves the current state of all the images
             save_current_state()
             
+            //loops to imagevies and display it according to the initial position
             for i in 0...imageViews.count-1{
                 imageViews[i].center = initial_position[i]
             }
             sender.setTitle("Hide", for: .normal)
         }
         else if(sender.titleLabel?.text == "Hide"){
+            //loops to imagevies and display it according to the updated position
             for i in 0...imageViews.count-1{
                 imageViewsCurrentState[i].center = cuurent_state[i]
             }
             sender.setTitle("Show Answer", for: .normal)
+            lockScreen = true
             cuurent_state = []
            
         }
@@ -227,7 +238,7 @@ class ViewController: UIViewController {
     }
 }
 
-/// Struct to save mid positio of image along with a boolean value which keeps track of the blank image
+/// Struct to save mid position of image along with a boolean value which keeps track of the blank image
 
 struct Cordinates{
     
