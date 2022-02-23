@@ -154,7 +154,7 @@ class ViewController: UIViewController {
     /// Use this method when user taps on the shuffle button
     
     @IBAction func do_shuffle(_ sender: Any) {
-        var randomShuffleCount = Int.random(in: 10..<25)
+        var randomShuffleCount = Int.random(in: 30..<40)
         while(randomShuffleCount>0){
             let curr_tile = do_valid_shuffle()
             swap_images(curr_Image: curr_tile)
