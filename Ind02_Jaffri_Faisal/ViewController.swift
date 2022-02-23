@@ -26,7 +26,7 @@ class ViewController: UIViewController {
         /// Loads all the imageviews at once programmatically
         ///
         /// Store the center of the imageviews in sepearte array
-        /// Store all the imageviews in sepearte array
+        /// Store all the imageviews in the sepearte array
         var xMid = 67
         var yMid = 200
         var x = 1
